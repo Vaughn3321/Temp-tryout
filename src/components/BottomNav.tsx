@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { Home, MapPin, Sparkles, NotebookPen } from 'lucide-react'
+import { Home, MapPin, Sparkles, NotebookPen, Users } from 'lucide-react'
 
 const tabs = [
   { to: '/', label: 'Home', icon: Home, end: true },
   { to: '/meetings', label: 'Meetings', icon: MapPin, end: false },
   { to: '/inspiration', label: 'Inspire', icon: Sparkles, end: false },
   { to: '/step10', label: 'Step 10', icon: NotebookPen, end: false },
+  { to: '/my-aa', label: 'My AA', icon: Users, end: false },
 ] as const
 
 export default function BottomNav() {

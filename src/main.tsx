@@ -8,6 +8,7 @@ import Meetings from './pages/Meetings'
 import Inspiration from './pages/Inspiration'
 import StepTen from './pages/StepTen'
 import Journal from './pages/Journal'
+import MyAA from './pages/MyAA'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -19,6 +20,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/inspiration" element={<Inspiration />} />
           <Route path="/step10" element={<StepTen />} />
           <Route path="/journal" element={<Journal />} />
+          <Route path="/my-aa" element={<MyAA />} />
         </Route>
       </Routes>
     </BrowserRouter>
