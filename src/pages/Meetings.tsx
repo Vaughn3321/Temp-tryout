@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { allDays, allTags, type DayOfWeek } from '../data/meetings'
 import MeetingCard from '../components/MeetingCard'
 import { useLiveMeetings } from '../hooks/useLiveMeetings'
-import { Search, RefreshCw, Settings2, X } from 'lucide-react'
+import { Search, RefreshCw, Settings2, X, Trash2, Plus } from 'lucide-react'
 
 const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }) as DayOfWeek
 
@@ -12,7 +12,8 @@ export default function Meetings() {
   const [activeTags, setActiveTags] = useState<Set<string>>(new Set())
   const [query, setQuery] = useState('')
   const [sourcePanelOpen, setSourcePanelOpen] = useState(false)
-  const [feedUrlDraft, setFeedUrlDraft] = useState(sources[0]?.feedUrl ?? '')
+  const [newLabel, setNewLabel] = useState('')
+  const [newUrl, setNewUrl] = useState('')
 
   function toggleTag(tag: string) {
     setActiveTags((prev) => {
@@ -23,11 +24,21 @@ export default function Meetings() {
     })
   }
 
-  function saveFeedUrl() {
-    const url = feedUrlDraft.trim()
-    if (!url) return
-    setSources((prev) => (prev.length > 0 ? [{ ...prev[0], feedUrl: url }] : [{ id: 'custom', label: 'Custom feed', feedUrl: url }]))
-    setSourcePanelOpen(false)
+  function updateSourceUrl(id: string, feedUrl: string) {
+    setSources((prev) => prev.map((s) => (s.id === id ? { ...s, feedUrl } : s)))
+  }
+
+  function removeSource(id: string) {
+    setSources((prev) => prev.filter((s) => s.id !== id))
+  }
+
+  function addSource() {
+    const label = newLabel.trim()
+    const feedUrl = newUrl.trim()
+    if (!label || !feedUrl) return
+    setSources((prev) => [...prev, { id: crypto.randomUUID(), label, feedUrl }])
+    setNewLabel('')
+    setNewUrl('')
   }
 
   const filtered = useMemo(() => {
@@ -90,27 +101,77 @@ export default function Meetings() {
       {sourcePanelOpen && (
         <div className="mt-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink-200/70 dark:bg-ink-900 dark:ring-ink-800">
           <div className="flex items-center justify-between">
-            <h3 className="font-display text-sm font-semibold text-ink-900 dark:text-ink-50">Meeting feed URL</h3>
+            <h3 className="font-display text-sm font-semibold text-ink-900 dark:text-ink-50">Meeting feeds</h3>
             <button onClick={() => setSourcePanelOpen(false)} aria-label="Close" className="text-ink-400">
               <X size={16} />
             </button>
           </div>
           <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">
-            Points at a Meeting Guide / TSML-format JSON feed from a local Intergroup. If live meetings
-            aren't loading, double-check this URL from a browser.
+            Each feed points at a Meeting Guide / TSML-format JSON feed from an Intergroup — results from
+            every working feed are combined. If a feed isn't loading, double-check its URL from a browser.
           </p>
-          <input
-            value={feedUrlDraft}
-            onChange={(e) => setFeedUrlDraft(e.target.value)}
-            placeholder="https://example.org/meetings/?format=json&mode=meetings"
-            className="mt-2 w-full rounded-xl bg-ink-50 p-2.5 text-xs text-ink-900 outline-none placeholder:text-ink-400 dark:bg-ink-800 dark:text-ink-100"
-          />
-          <div className="mt-2 flex gap-2">
+
+          <div className="mt-3 flex flex-col gap-2">
+            {sources.map((s) => (
+              <div key={s.id} className="rounded-xl bg-ink-50 p-2.5 dark:bg-ink-800">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-ink-700 dark:text-ink-200">
+                    {s.label}
+                    {sourceLabels.includes(s.label) && (
+                      <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-serenity-500 align-middle" />
+                    )}
+                  </span>
+                  <button
+                    onClick={() => removeSource(s.id)}
+                    aria-label={`Remove ${s.label}`}
+                    className="text-ink-400 hover:text-sunrise-600"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+                <input
+                  key={s.id}
+                  defaultValue={s.feedUrl}
+                  onBlur={(e) => {
+                    if (e.target.value.trim() && e.target.value !== s.feedUrl) updateSourceUrl(s.id, e.target.value.trim())
+                  }}
+                  className="mt-1.5 w-full rounded-lg bg-white p-2 text-xs text-ink-900 outline-none dark:bg-ink-900 dark:text-ink-100"
+                />
+              </div>
+            ))}
+            {sources.length === 0 && (
+              <p className="text-xs italic text-ink-400">No feeds configured — showing sample data.</p>
+            )}
+          </div>
+
+          <div className="mt-3 flex gap-2">
             <button
-              onClick={saveFeedUrl}
+              onClick={() => refetch()}
               className="flex-1 rounded-xl bg-dusk-500 py-2 text-xs font-semibold text-white"
             >
-              Save &amp; reload
+              Reload feeds
+            </button>
+          </div>
+
+          <div className="mt-3 border-t border-ink-200 pt-3 dark:border-ink-700">
+            <p className="text-xs font-semibold text-ink-700 dark:text-ink-300">Add a feed</p>
+            <input
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              placeholder="Label, e.g. San Diego Intergroup"
+              className="mt-1.5 w-full rounded-xl bg-ink-50 p-2.5 text-xs text-ink-900 outline-none placeholder:text-ink-400 dark:bg-ink-800 dark:text-ink-100"
+            />
+            <input
+              value={newUrl}
+              onChange={(e) => setNewUrl(e.target.value)}
+              placeholder="https://example.org/meetings/?format=json&mode=meetings"
+              className="mt-1.5 w-full rounded-xl bg-ink-50 p-2.5 text-xs text-ink-900 outline-none placeholder:text-ink-400 dark:bg-ink-800 dark:text-ink-100"
+            />
+            <button
+              onClick={addSource}
+              className="mt-1.5 flex w-full items-center justify-center gap-1 rounded-xl bg-serenity-500 py-2 text-xs font-semibold text-white"
+            >
+              <Plus size={13} /> Add feed
             </button>
           </div>
         </div>
