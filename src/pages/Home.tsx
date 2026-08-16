@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, MapPin, NotebookPen } from 'lucide-react'
-import { meetings, allDays, type DayOfWeek } from '../data/meetings'
+import { allDays, type DayOfWeek, type Meeting } from '../data/meetings'
 import { quoteOfTheDay } from '../data/quotes'
 import { inventoryPrompts, todayKey, type InventoryEntry } from '../data/inventory'
 import { useLocalStorage } from '../hooks/useLocalStorage'
+import { useLiveMeetings } from '../hooks/useLiveMeetings'
 import { computeStreak } from '../lib/streak'
 import StreakBadge from '../components/StreakBadge'
 import QuoteCard from '../components/QuoteCard'
@@ -17,7 +18,7 @@ function timeToMinutes(time: string): number {
   return hours * 60 + Number(m)
 }
 
-function useNextMeeting() {
+function useNextMeeting(meetings: Meeting[]) {
   return useMemo(() => {
     const now = new Date()
     const todayIndex = allDays.indexOf(
@@ -35,14 +36,15 @@ function useNextMeeting() {
 
     withOffset.sort((a, b) => a.sortKey - b.sortKey)
     return withOffset[0]?.meeting
-  }, [])
+  }, [meetings])
 }
 
 export default function Home() {
   const [favorites, setFavorites] = useLocalStorage<string[]>('odaat:favorites', [])
   const [entries] = useLocalStorage<InventoryEntry[]>('odaat:entries', [])
+  const { meetings } = useLiveMeetings()
   const streak = computeStreak(entries)
-  const nextMeeting = useNextMeeting()
+  const nextMeeting = useNextMeeting(meetings)
   const today = quoteOfTheDay()
   const checkedInToday = entries.some((e) => e.date === todayKey())
 

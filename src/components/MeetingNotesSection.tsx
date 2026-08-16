@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Plus, StickyNote, Pencil, Trash2, X } from 'lucide-react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
-import { meetings } from '../data/meetings'
+import { sampleMeetings as meetings } from '../data/meetings'
 import { todayKey } from '../data/inventory'
 import type { MeetingNote } from '../data/meetingNotes'
 import VibePicker, { vibes } from './VibePicker'

@@ -1,4 +1,4 @@
-import { MapPin, Clock, Video } from 'lucide-react'
+import { MapPin, Clock, Video, ExternalLink } from 'lucide-react'
 import type { Meeting } from '../data/meetings'
 
 export default function MeetingCard({ meeting }: { meeting: Meeting }) {
@@ -41,6 +41,18 @@ export default function MeetingCard({ meeting }: { meeting: Meeting }) {
               </span>
             ))}
           </div>
+
+          {meeting.conferenceUrl && (
+            <a
+              href={meeting.conferenceUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-dusk-600 dark:text-dusk-300"
+            >
+              <ExternalLink size={12} /> Join online
+            </a>
+          )}
         </div>
       </div>
     </div>

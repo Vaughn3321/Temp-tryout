@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Plus, Phone, Star, Pencil, Trash2, X, User } from 'lucide-react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
-import { meetings } from '../data/meetings'
+import { sampleMeetings as meetings } from '../data/meetings'
 import { todayKey } from '../data/inventory'
 import { contactTags, type Contact, type ContactTag } from '../data/contacts'
 

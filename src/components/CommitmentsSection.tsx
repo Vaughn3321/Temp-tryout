@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Plus, CalendarCheck, Pencil, Trash2, X } from 'lucide-react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
-import { meetings, allDays, type DayOfWeek } from '../data/meetings'
+import { sampleMeetings as meetings, allDays, type DayOfWeek } from '../data/meetings'
 import type { Commitment, CommitmentFrequency } from '../data/commitments'
 import Toggle from './Toggle'
 

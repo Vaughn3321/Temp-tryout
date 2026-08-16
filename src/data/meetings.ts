@@ -21,16 +21,20 @@ export interface Meeting {
   day: DayOfWeek
   time: string // "7:00 AM"
   durationMin: number
-  tags: MeetingTag[]
+  tags: string[]
   format: 'In Person' | 'Online' | 'Hybrid'
   locationName: string
   address?: string
   distanceMi?: number
   vibe: string // one-line "hip" description
   emoji: string
+  conferenceUrl?: string
+  conferencePhone?: string
+  source?: string // e.g. "LA Central Office", or omitted for sample data
 }
 
-export const meetings: Meeting[] = [
+/** Curated sample meetings — shown when no live feed is reachable. */
+export const sampleMeetings: Meeting[] = [
   {
     id: 'm1',
     name: 'Sunrise Sobriety',
