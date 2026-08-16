@@ -94,7 +94,9 @@ export default function Home() {
 
       {!checkedInToday && (
         <div className="mt-3 rounded-2xl bg-sunrise-100 p-3.5 text-sm text-sunrise-800 dark:bg-sunrise-500/10 dark:text-sunrise-300">
-          You haven't checked in today — {inventoryPrompts.length} quick questions whenever you're ready. 🌙
+          {streak > 0
+            ? `Your ${streak}-day streak is waiting — ${inventoryPrompts.length} quick questions and it keeps going. 🔥`
+            : `You haven't checked in today — ${inventoryPrompts.length} quick questions whenever you're ready. 🌙`}
         </div>
       )}
 

@@ -2,15 +2,37 @@ import { useState } from 'react'
 import { quotes, quoteOfTheDay } from '../data/quotes'
 import QuoteCard from '../components/QuoteCard'
 import { useLocalStorage } from '../hooks/useLocalStorage'
-import { Bell } from 'lucide-react'
+import { useDailyNudge } from '../hooks/useDailyNudge'
+import { computeStreak } from '../lib/streak'
+import { todayKey, type InventoryEntry } from '../data/inventory'
+import { Bell, BellOff } from 'lucide-react'
 
 export default function Inspiration() {
   const [favorites, setFavorites] = useLocalStorage<string[]>('odaat:favorites', [])
+  const [entries] = useLocalStorage<InventoryEntry[]>('odaat:entries', [])
   const [tab, setTab] = useState<'all' | 'favorites'>('all')
   const [notifTime, setNotifTime] = useLocalStorage<string>('odaat:notifTime', '08:00')
   const [notifOn, setNotifOn] = useLocalStorage<boolean>('odaat:notifOn', true)
 
   const today = quoteOfTheDay()
+  const streak = computeStreak(entries)
+  const checkedInToday = entries.some((e) => e.date === todayKey())
+
+  const { permission, requestPermission } = useDailyNudge(notifOn, notifTime, () => {
+    if (!checkedInToday && streak > 0) return `${today.text} — and your ${streak}-day streak is still waiting on you.`
+    if (!checkedInToday) return `${today.text} Tonight's a good night for a check-in.`
+    return today.text
+  })
+
+  async function toggleNotifications() {
+    if (!notifOn) {
+      const result = await requestPermission()
+      if (result === 'granted' || result === 'unsupported') setNotifOn(true)
+      // if denied, leave the toggle off — the browser already told the user why
+    } else {
+      setNotifOn(false)
+    }
+  }
 
   function toggleFavorite(id: string) {
     setFavorites((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]))
@@ -34,13 +56,18 @@ export default function Inspiration() {
       <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-ink-200/70 dark:bg-ink-900 dark:ring-ink-800">
         <div className="flex items-center gap-2.5">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-dusk-100 text-dusk-600 dark:bg-dusk-500/15 dark:text-dusk-300">
-            <Bell size={16} />
+            {notifOn ? <Bell size={16} /> : <BellOff size={16} />}
           </span>
           <div>
             <p className="text-sm font-medium text-ink-900 dark:text-ink-100">Daily nudge</p>
             <p className="text-xs text-ink-500 dark:text-ink-400">
-              {notifOn ? `Sends every day at ${notifTime}` : 'Notifications paused'}
+              {notifOn ? `Sends every day at ${notifTime} while ODAAT is open` : 'Notifications paused'}
             </p>
+            {notifOn && permission === 'denied' && (
+              <p className="mt-0.5 text-xs text-sunrise-600 dark:text-sunrise-400">
+                Blocked in your browser's notification settings.
+              </p>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -56,7 +83,7 @@ export default function Inspiration() {
             type="button"
             role="switch"
             aria-checked={notifOn}
-            onClick={() => setNotifOn((v) => !v)}
+            onClick={toggleNotifications}
             className={[
               'relative h-6 w-11 shrink-0 rounded-full transition-colors',
               notifOn ? 'bg-sunrise-500' : 'bg-ink-300 dark:bg-ink-700',

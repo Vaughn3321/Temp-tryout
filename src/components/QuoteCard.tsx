@@ -21,8 +21,7 @@ export default function QuoteCard({
           : 'bg-white text-ink-900 ring-1 ring-ink-200/70 dark:bg-ink-900 dark:text-ink-100 dark:ring-ink-800',
       ].join(' ')}
     >
-      <div className="flex items-start justify-between gap-3">
-        <span className="text-2xl leading-none">{quote.emoji}</span>
+      <div className="flex items-start justify-end gap-3">
         <button
           type="button"
           onClick={() => onToggleFavorite(quote.id)}

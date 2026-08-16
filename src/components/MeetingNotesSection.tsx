@@ -7,6 +7,7 @@ import type { MeetingNote } from '../data/meetingNotes'
 import VibePicker, { vibes } from './VibePicker'
 
 const meetingNames = meetings.map((m) => m.name)
+const countWindows = [7, 30, 90] as const
 
 const emptyForm = {
   meetingName: '',
@@ -15,11 +16,19 @@ const emptyForm = {
   note: '',
 }
 
+function countInWindow(notes: MeetingNote[], days: number): number {
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() - days)
+  const cutoffKey = todayKey(cutoff)
+  return notes.filter((n) => n.date >= cutoffKey).length
+}
+
 export default function MeetingNotesSection() {
   const [notes, setNotes] = useLocalStorage<MeetingNote[]>('odaat:meetingNotes', [])
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [countWindow, setCountWindow] = useState<(typeof countWindows)[number]>(30)
 
   function openNew() {
     setForm(emptyForm)
@@ -77,6 +86,27 @@ export default function MeetingNotesSection() {
             <Plus size={14} /> Add
           </button>
         )}
+      </div>
+
+      <div className="mt-3 rounded-2xl bg-dusk-500 p-4 text-white shadow-sm">
+        <div className="flex items-baseline gap-2">
+          <span className="font-display text-3xl font-semibold">{countInWindow(notes, countWindow)}</span>
+          <span className="text-sm text-dusk-100">meetings in the last {countWindow} days</span>
+        </div>
+        <div className="mt-3 flex gap-1.5 rounded-full bg-white/15 p-1 text-xs">
+          {countWindows.map((w) => (
+            <button
+              key={w}
+              onClick={() => setCountWindow(w)}
+              className={[
+                'flex-1 rounded-full py-1.5 font-semibold transition-colors',
+                countWindow === w ? 'bg-white text-dusk-700' : 'text-white/80',
+              ].join(' ')}
+            >
+              {w} days
+            </button>
+          ))}
+        </div>
       </div>
 
       {formOpen && (

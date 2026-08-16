@@ -10,6 +10,7 @@ export type MeetingTag =
   | 'Beginner'
   | 'Online'
   | 'In Person'
+  | 'Daily'
 
 export type DayOfWeek =
   | 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday'
@@ -228,6 +229,22 @@ export const sampleMeetings: Meeting[] = [
     vibe: 'The last stop before Monday — a solid anchor to close the week.',
     emoji: '⚓',
   },
+  ...(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as DayOfWeek[]).map(
+    (day, i): Meeting => ({
+      id: `m-daily-${i}`,
+      name: 'Daily Reprieve',
+      day,
+      time: '7:00 AM',
+      durationMin: 30,
+      tags: ['Open', 'Discussion'],
+      format: 'In Person',
+      locationName: 'Maple Street Church Annex',
+      address: '214 Maple St, Room B',
+      distanceMi: 0.6,
+      vibe: 'Same time, every day — a steady anchor before anything else starts.',
+      emoji: '🌤️',
+    }),
+  ),
 ]
 
 export const allDays: DayOfWeek[] = [
@@ -236,5 +253,5 @@ export const allDays: DayOfWeek[] = [
 
 export const allTags: MeetingTag[] = [
   'Open', 'Closed', 'Speaker', 'Discussion', 'Big Book',
-  'Women', 'Men', 'LGBTQ+', 'Beginner', 'Online', 'In Person',
+  'Women', 'Men', 'LGBTQ+', 'Beginner', 'Online', 'In Person', 'Daily',
 ]

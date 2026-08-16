@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { sampleMeetings, type Meeting } from '../data/meetings'
 import { defaultMeetingSources, type MeetingSource } from '../data/meetingSources'
 import { fetchMeetingGuideFeed } from '../lib/meetingGuide'
+import { withDailyTags } from '../lib/dailyMeetings'
 import { useLocalStorage } from './useLocalStorage'
 
 const CACHE_KEY = 'odaat:meetingsCache'
@@ -22,7 +23,7 @@ export type MeetingsStatus = 'loading' | 'live' | 'sample' | 'error'
  */
 export function useLiveMeetings() {
   const [sources, setSources] = useLocalStorage<MeetingSource[]>('odaat:meetingSources', defaultMeetingSources)
-  const [meetings, setMeetings] = useState<Meeting[]>(sampleMeetings)
+  const [meetings, setMeetings] = useState<Meeting[]>(() => withDailyTags(sampleMeetings))
   const [status, setStatus] = useState<MeetingsStatus>('loading')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [sourceLabels, setSourceLabels] = useState<string[]>([])
@@ -30,7 +31,7 @@ export function useLiveMeetings() {
   const load = useCallback(
     async (force = false) => {
       if (sources.length === 0) {
-        setMeetings(sampleMeetings)
+        setMeetings(withDailyTags(sampleMeetings))
         setSourceLabels([])
         setStatus('sample')
         return
@@ -71,17 +72,18 @@ export function useLiveMeetings() {
       })
 
       if (fetched.length > 0) {
-        setMeetings(fetched)
+        const tagged = withDailyTags(fetched)
+        setMeetings(tagged)
         setSourceLabels(okLabels)
         setStatus('live')
         try {
-          const cache: Cache = { fetchedAt: Date.now(), meetings: fetched, sourceLabels: okLabels }
+          const cache: Cache = { fetchedAt: Date.now(), meetings: tagged, sourceLabels: okLabels }
           window.localStorage.setItem(CACHE_KEY, JSON.stringify(cache))
         } catch {
           // storage unavailable — non-fatal, we just refetch next time
         }
       } else {
-        setMeetings(sampleMeetings)
+        setMeetings(withDailyTags(sampleMeetings))
         setSourceLabels([])
         setStatus('error')
         setErrorMessage(errors[0] ?? 'Live meeting feed unavailable')

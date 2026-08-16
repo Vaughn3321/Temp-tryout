@@ -1,5 +1,7 @@
-import { MapPin, Clock, Video, ExternalLink } from 'lucide-react'
+import { MapPin, Clock, Video, ExternalLink, CalendarPlus } from 'lucide-react'
 import type { Meeting } from '../data/meetings'
+import { formatDuration } from '../lib/time'
+import { downloadMeetingIcs } from '../lib/calendar'
 
 export default function MeetingCard({ meeting }: { meeting: Meeting }) {
   return (
@@ -23,7 +25,7 @@ export default function MeetingCard({ meeting }: { meeting: Meeting }) {
 
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-500 dark:text-ink-400">
             <span className="flex items-center gap-1">
-              <Clock size={13} /> {meeting.day} · {meeting.time}
+              <Clock size={13} /> {meeting.day} · {meeting.time} · {formatDuration(meeting.durationMin)}
             </span>
             <span className="flex items-center gap-1">
               {meeting.format === 'Online' ? <Video size={13} /> : <MapPin size={13} />}
@@ -42,17 +44,26 @@ export default function MeetingCard({ meeting }: { meeting: Meeting }) {
             ))}
           </div>
 
-          {meeting.conferenceUrl && (
-            <a
-              href={meeting.conferenceUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-dusk-600 dark:text-dusk-300"
+          <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            {meeting.conferenceUrl && (
+              <a
+                href={meeting.conferenceUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-dusk-600 dark:text-dusk-300"
+              >
+                <ExternalLink size={12} /> Join online
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => downloadMeetingIcs(meeting)}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-serenity-600 dark:text-serenity-300"
             >
-              <ExternalLink size={12} /> Join online
-            </a>
-          )}
+              <CalendarPlus size={12} /> Add to calendar
+            </button>
+          </div>
         </div>
       </div>
     </div>
