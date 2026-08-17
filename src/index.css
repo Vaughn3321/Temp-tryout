@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fredoka", ui-rounded, "Segoe UI", sans-serif;
+  --font-body: "Inter", system-ui, "Segoe UI", sans-serif;
+
+  /* Sunrise brand ramp — warmth for "new day" energy */
+  --color-sunrise-50: #fff6ed;
+  --color-sunrise-100: #ffe9d1;
+  --color-sunrise-200: #ffcf9e;
+  --color-sunrise-300: #ffab5c;
+  --color-sunrise-400: #ff8339;
+  --color-sunrise-500: #ff6a3d;
+  --color-sunrise-600: #ef4d1f;
+  --color-sunrise-700: #c63815;
+  --color-sunrise-800: #9e2e16;
+  --color-sunrise-900: #7f2915;
+
+  /* Dusk/violet — for reflective, nighttime step-work moments */
+  --color-dusk-50: #f4f2ff;
+  --color-dusk-100: #e9e5ff;
+  --color-dusk-200: #d2c9ff;
+  --color-dusk-300: #b3a1ff;
+  --color-dusk-400: #9370ff;
+  --color-dusk-500: #7c4dff;
+  --color-dusk-600: #6a32f0;
+  --color-dusk-700: #5825c9;
+  --color-dusk-800: #4720a1;
+  --color-dusk-900: #3a1d80;
+
+  /* Serenity teal — meetings / grounded / calm */
+  --color-serenity-50: #edfdfb;
+  --color-serenity-100: #d2faf4;
+  --color-serenity-200: #a8f2e8;
+  --color-serenity-300: #6de3d6;
+  --color-serenity-400: #35cabc;
+  --color-serenity-500: #1cada2;
+  --color-serenity-600: #158b84;
+  --color-serenity-700: #156f6a;
+  --color-serenity-800: #145956;
+  --color-serenity-900: #134a48;
+
+  --color-ink-50: #f7f7f9;
+  --color-ink-100: #ececf2;
+  --color-ink-200: #d8d7e3;
+  --color-ink-300: #b3b0c6;
+  --color-ink-400: #8985a3;
+  --color-ink-500: #676285;
+  --color-ink-600: #4f4b6b;
+  --color-ink-700: #3c3956;
+  --color-ink-800: #262440;
+  --color-ink-900: #16152b;
+  --color-ink-950: #0d0c1b;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--color-sunrise-50);
+  color: var(--color-ink-900);
+  min-height: 100svh;
+}
+
+.dark body {
+  background: var(--color-ink-950);
+  color: var(--color-ink-100);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+::selection {
+  background: var(--color-sunrise-300);
+  color: var(--color-ink-950);
+}
+
+/* subtle scrollbar so it doesn't fight the playful UI */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-300) transparent;
+}
