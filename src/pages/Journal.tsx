@@ -1,3 +1,4 @@
+import { storeKeys } from '../data/store'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, Trash2 } from 'lucide-react'
@@ -7,7 +8,7 @@ import { useLocalStorage } from '../hooks/useLocalStorage'
 const moodEmoji: Record<number, string> = { 1: '😞', 2: '😕', 3: '🙂', 4: '😊', 5: '🤩' }
 
 export default function Journal() {
-  const [entries, setEntries] = useLocalStorage<InventoryEntry[]>('odaat:entries', [])
+  const [entries, setEntries] = useLocalStorage<InventoryEntry[]>(storeKeys.entries, [])
   const [openId, setOpenId] = useState<string | null>(null)
 
   const sorted = [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt))

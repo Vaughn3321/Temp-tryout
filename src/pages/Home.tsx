@@ -1,3 +1,4 @@
+import { storeKeys } from '../data/store'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, MapPin, NotebookPen } from 'lucide-react'
@@ -10,6 +11,7 @@ import { computeStreak } from '../lib/streak'
 import StreakBadge from '../components/StreakBadge'
 import QuoteCard from '../components/QuoteCard'
 import MeetingCard from '../components/MeetingCard'
+import SobrietyCard from '../components/SobrietyCard'
 
 function timeToMinutes(time: string): number {
   const [, h, m, mer] = time.match(/(\d+):(\d+)\s?(AM|PM)/i) ?? []
@@ -40,8 +42,8 @@ function useNextMeeting(meetings: Meeting[]) {
 }
 
 export default function Home() {
-  const [favorites, setFavorites] = useLocalStorage<string[]>('odaat:favorites', [])
-  const [entries] = useLocalStorage<InventoryEntry[]>('odaat:entries', [])
+  const [favorites, setFavorites] = useLocalStorage<string[]>(storeKeys.favorites, [])
+  const [entries] = useLocalStorage<InventoryEntry[]>(storeKeys.entries, [])
   const { meetings } = useLiveMeetings()
   const streak = computeStreak(entries)
   const nextMeeting = useNextMeeting(meetings)
@@ -66,6 +68,8 @@ export default function Home() {
         </div>
         <StreakBadge streak={streak} />
       </div>
+
+      <SobrietyCard />
 
       <div className="mt-4">
         <Link to="/inspiration">

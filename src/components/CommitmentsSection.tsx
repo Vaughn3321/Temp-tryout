@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { storeKeys } from '../data/store'
 import { Plus, CalendarCheck, Pencil, Trash2, X } from 'lucide-react'
-import { useLocalStorage } from '../hooks/useLocalStorage'
+import { useCrudList } from '../hooks/useCrudList'
 import { sampleMeetings as meetings, allDays, type DayOfWeek } from '../data/meetings'
 import type { Commitment, CommitmentFrequency } from '../data/commitments'
 import Toggle from './Toggle'
@@ -17,69 +17,36 @@ const emptyForm = {
   notes: '',
 }
 
+type CommitmentForm = typeof emptyForm
+
 export default function CommitmentsSection() {
-  const [commitments, setCommitments] = useLocalStorage<Commitment[]>('odaat:commitments', [])
-  const [formOpen, setFormOpen] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [form, setForm] = useState(emptyForm)
-
-  function openNew() {
-    setForm(emptyForm)
-    setEditingId(null)
-    setFormOpen(true)
-  }
-
-  function openEdit(c: Commitment) {
-    setForm({
-      title: c.title,
-      meetingName: c.meetingName,
-      day: (c.day as DayOfWeek) ?? '',
-      time: c.time ?? '',
-      frequency: c.frequency,
-      notes: c.notes,
-    })
-    setEditingId(c.id)
-    setFormOpen(true)
-  }
-
-  function save() {
-    if (!form.title.trim()) return
-    if (editingId) {
-      setCommitments((prev) =>
-        prev.map((c) =>
-          c.id === editingId
-            ? {
-                ...c,
-                title: form.title.trim(),
-                meetingName: form.meetingName.trim(),
-                day: form.day || undefined,
-                time: form.time.trim() || undefined,
-                frequency: form.frequency,
-                notes: form.notes.trim(),
-              }
-            : c,
-        ),
-      )
-    } else {
-      const newCommitment: Commitment = {
-        id: crypto.randomUUID(),
-        title: form.title.trim(),
-        meetingName: form.meetingName.trim(),
-        day: form.day || undefined,
-        time: form.time.trim() || undefined,
-        frequency: form.frequency,
-        active: true,
-        notes: form.notes.trim(),
-        createdAt: new Date().toISOString(),
-      }
-      setCommitments((prev) => [newCommitment, ...prev])
-    }
-    setFormOpen(false)
-  }
-
-  function remove(id: string) {
-    setCommitments((prev) => prev.filter((c) => c.id !== id))
-  }
+  const { items: commitments, setItems: setCommitments, formOpen, editingId, form, setForm, openNew, openEdit, closeForm, save, remove } =
+    useCrudList<Commitment, CommitmentForm>(
+      storeKeys.commitments,
+      emptyForm,
+      (c) => ({
+        title: c.title,
+        meetingName: c.meetingName,
+        day: (c.day as DayOfWeek) ?? '',
+        time: c.time ?? '',
+        frequency: c.frequency,
+        notes: c.notes,
+      }),
+      (f, existing) => {
+        if (!f.title.trim()) return null
+        const shared = {
+          title: f.title.trim(),
+          meetingName: f.meetingName.trim(),
+          day: f.day || undefined,
+          time: f.time.trim() || undefined,
+          frequency: f.frequency,
+          notes: f.notes.trim(),
+        }
+        return existing
+          ? { ...existing, ...shared }
+          : { id: crypto.randomUUID(), ...shared, active: true, createdAt: new Date().toISOString() }
+      },
+    )
 
   function toggleActive(id: string) {
     setCommitments((prev) => prev.map((c) => (c.id === id ? { ...c, active: !c.active } : c)))
@@ -109,7 +76,7 @@ export default function CommitmentsSection() {
             <h3 className="font-display text-sm font-semibold text-ink-900 dark:text-ink-50">
               {editingId ? 'Edit commitment' : 'New commitment'}
             </h3>
-            <button onClick={() => setFormOpen(false)} aria-label="Close" className="text-ink-400">
+            <button onClick={closeForm} aria-label="Close" className="text-ink-400">
               <X size={16} />
             </button>
           </div>

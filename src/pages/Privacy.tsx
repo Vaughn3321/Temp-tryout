@@ -1,7 +1,10 @@
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ShieldCheck, Ban, Database, Eye } from 'lucide-react'
+import { ArrowLeft, ShieldCheck, Ban, Database, Eye, Download, Upload } from 'lucide-react'
+import { exportBackup, importBackup } from '../lib/backup'
 
 const staysOnDevice = [
+  'Your sobriety date and recovery profile',
   'Your Tenth Step journal entries',
   'Your contacts — names, numbers, notes',
   'Your service commitments',
@@ -19,6 +22,28 @@ const neverHappens = [
 ]
 
 export default function Privacy() {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [importMessage, setImportMessage] = useState<{ tone: 'good' | 'bad'; text: string } | null>(null)
+
+  async function handleFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    const confirmed = window.confirm(
+      'Importing a backup overwrites your current journal, contacts, commitments, and other saved data on this device. Continue?',
+    )
+    if (!confirmed) return
+
+    const result = await importBackup(file)
+    if (result.ok) {
+      setImportMessage({ tone: 'good', text: `Restored ${result.keysRestored} data type(s). Reloading…` })
+      setTimeout(() => window.location.reload(), 900)
+    } else {
+      setImportMessage({ tone: 'bad', text: result.error })
+    }
+  }
+
   return (
     <div className="px-4 pt-4">
       <div className="flex items-center gap-2">
@@ -98,11 +123,50 @@ export default function Privacy() {
           The honest tradeoff
         </h2>
         <p className="mt-1.5 text-sm text-ink-600 dark:text-ink-400">
-          Nothing leaving your device also means nothing backs it up. Clear your browser data, switch
-          devices, or reinstall, and your journal and contacts are gone — there's no account to recover
-          them from. That's the deliberate cost of not running a server that could see them. A future,
-          fully opt-in backup option may change this, but the default will always stay local-only.
+          Nothing leaving your device also means nothing backs it up automatically. Clear your browser
+          data, switch devices, or reinstall, and your journal and contacts are gone — there's no account
+          to recover them from. That's the deliberate cost of not running a server that could see them.
+          The backup below is manual and entirely optional — the default will always stay local-only.
         </p>
+      </div>
+
+      <div className="mt-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink-200/70 dark:bg-ink-900 dark:ring-ink-800">
+        <div className="flex items-center gap-2">
+          <Download size={16} className="text-serenity-600 dark:text-serenity-300" />
+          <h2 className="font-display text-sm font-semibold text-ink-900 dark:text-ink-50">
+            Back up your data
+          </h2>
+        </div>
+        <p className="mt-2 text-sm text-ink-700 dark:text-ink-300">
+          Save everything on this device to a file you control, or restore from one. This file is
+          <strong> unencrypted plain text</strong> — anyone who opens it can read your journal and contacts,
+          so keep it somewhere private, the same way you'd treat a paper journal.
+        </p>
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => exportBackup()}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-serenity-500 py-2.5 text-sm font-semibold text-white shadow-sm active:scale-[0.98]"
+          >
+            <Download size={14} /> Export
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-ink-100 py-2.5 text-sm font-semibold text-ink-700 dark:bg-ink-800 dark:text-ink-200"
+          >
+            <Upload size={14} /> Import
+          </button>
+          <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChosen} />
+        </div>
+        {importMessage && (
+          <p
+            className={[
+              'mt-2 text-xs font-medium',
+              importMessage.tone === 'good' ? 'text-serenity-600 dark:text-serenity-300' : 'text-sunrise-600 dark:text-sunrise-400',
+            ].join(' ')}
+          >
+            {importMessage.text}
+          </p>
+        )}
       </div>
 
       <div className="mt-3 rounded-2xl bg-ink-100 p-4 dark:bg-ink-900">

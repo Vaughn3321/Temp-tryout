@@ -1,6 +1,7 @@
+import { storeKeys } from '../data/store'
 import { useState } from 'react'
 import { Plus, StickyNote, Pencil, Trash2, X } from 'lucide-react'
-import { useLocalStorage } from '../hooks/useLocalStorage'
+import { useCrudList } from '../hooks/useCrudList'
 import { sampleMeetings as meetings } from '../data/meetings'
 import { todayKey } from '../data/inventory'
 import type { MeetingNote } from '../data/meetingNotes'
@@ -16,6 +17,8 @@ const emptyForm = {
   note: '',
 }
 
+type MeetingNoteForm = typeof emptyForm
+
 function countInWindow(notes: MeetingNote[], days: number): number {
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - days)
@@ -24,51 +27,20 @@ function countInWindow(notes: MeetingNote[], days: number): number {
 }
 
 export default function MeetingNotesSection() {
-  const [notes, setNotes] = useLocalStorage<MeetingNote[]>('odaat:meetingNotes', [])
-  const [formOpen, setFormOpen] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [form, setForm] = useState(emptyForm)
+  const { items: notes, formOpen, editingId, form, setForm, openNew, openEdit, closeForm, save, remove } =
+    useCrudList<MeetingNote, MeetingNoteForm>(
+      storeKeys.meetingNotes,
+      emptyForm,
+      (n) => ({ meetingName: n.meetingName, date: n.date, vibe: n.vibe, note: n.note }),
+      (f, existing) => {
+        if (!f.meetingName.trim()) return null
+        const shared = { meetingName: f.meetingName.trim(), date: f.date, vibe: f.vibe, note: f.note.trim() }
+        return existing
+          ? { ...existing, ...shared }
+          : { id: crypto.randomUUID(), ...shared, createdAt: new Date().toISOString() }
+      },
+    )
   const [countWindow, setCountWindow] = useState<(typeof countWindows)[number]>(30)
-
-  function openNew() {
-    setForm(emptyForm)
-    setEditingId(null)
-    setFormOpen(true)
-  }
-
-  function openEdit(n: MeetingNote) {
-    setForm({ meetingName: n.meetingName, date: n.date, vibe: n.vibe, note: n.note })
-    setEditingId(n.id)
-    setFormOpen(true)
-  }
-
-  function save() {
-    if (!form.meetingName.trim()) return
-    if (editingId) {
-      setNotes((prev) =>
-        prev.map((n) =>
-          n.id === editingId
-            ? { ...n, meetingName: form.meetingName.trim(), date: form.date, vibe: form.vibe, note: form.note.trim() }
-            : n,
-        ),
-      )
-    } else {
-      const entry: MeetingNote = {
-        id: crypto.randomUUID(),
-        meetingName: form.meetingName.trim(),
-        date: form.date,
-        vibe: form.vibe,
-        note: form.note.trim(),
-        createdAt: new Date().toISOString(),
-      }
-      setNotes((prev) => [entry, ...prev])
-    }
-    setFormOpen(false)
-  }
-
-  function remove(id: string) {
-    setNotes((prev) => prev.filter((n) => n.id !== id))
-  }
 
   const sorted = [...notes].sort((a, b) => b.date.localeCompare(a.date))
 
@@ -115,7 +87,7 @@ export default function MeetingNotesSection() {
             <h3 className="font-display text-sm font-semibold text-ink-900 dark:text-ink-50">
               {editingId ? 'Edit note' : 'New meeting note'}
             </h3>
-            <button onClick={() => setFormOpen(false)} aria-label="Close" className="text-ink-400">
+            <button onClick={closeForm} aria-label="Close" className="text-ink-400">
               <X size={16} />
             </button>
           </div>

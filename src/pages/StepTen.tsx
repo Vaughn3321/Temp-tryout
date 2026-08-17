@@ -1,3 +1,4 @@
+import { storeKeys } from '../data/store'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Check, NotebookPen } from 'lucide-react'
@@ -17,7 +18,7 @@ const moods = [
 type FlowStage = 'idle' | 'mood' | 'question' | 'review' | 'done'
 
 export default function StepTen() {
-  const [entries, setEntries] = useLocalStorage<InventoryEntry[]>('odaat:entries', [])
+  const [entries, setEntries] = useLocalStorage<InventoryEntry[]>(storeKeys.entries, [])
   const streak = useMemo(() => computeStreak(entries), [entries])
 
   const [stage, setStage] = useState<FlowStage>('idle')

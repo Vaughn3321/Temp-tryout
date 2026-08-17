@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { storeKeys } from '../data/store'
 import { Plus, Phone, Star, Pencil, Trash2, X, User } from 'lucide-react'
-import { useLocalStorage } from '../hooks/useLocalStorage'
+import { useCrudList } from '../hooks/useCrudList'
 import { sampleMeetings as meetings } from '../data/meetings'
 import { todayKey } from '../data/inventory'
 import { contactTags, type Contact, type ContactTag } from '../data/contacts'
@@ -16,75 +16,42 @@ const emptyForm = {
   notes: '',
 }
 
+type ContactForm = typeof emptyForm
+
 export default function ContactsSection() {
-  const [contacts, setContacts] = useLocalStorage<Contact[]>('odaat:contacts', [])
-  const [formOpen, setFormOpen] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [form, setForm] = useState(emptyForm)
-
-  function openNew() {
-    setForm(emptyForm)
-    setEditingId(null)
-    setFormOpen(true)
-  }
-
-  function openEdit(c: Contact) {
-    setForm({
-      name: c.name,
-      phone: c.phone ?? '',
-      metAt: c.metAt,
-      dateMet: c.dateMet,
-      tags: c.tags,
-      notes: c.notes,
-    })
-    setEditingId(c.id)
-    setFormOpen(true)
-  }
+  const { items: contacts, setItems: setContacts, formOpen, editingId, form, setForm, openNew, openEdit, closeForm, save, remove } =
+    useCrudList<Contact, ContactForm>(
+      storeKeys.contacts,
+      emptyForm,
+      (c) => ({
+        name: c.name,
+        phone: c.phone ?? '',
+        metAt: c.metAt,
+        dateMet: c.dateMet,
+        tags: c.tags,
+        notes: c.notes,
+      }),
+      (f, existing) => {
+        if (!f.name.trim()) return null
+        const shared = {
+          name: f.name.trim(),
+          phone: f.phone.trim() || undefined,
+          metAt: f.metAt.trim(),
+          dateMet: f.dateMet,
+          tags: f.tags,
+          notes: f.notes.trim(),
+        }
+        return existing
+          ? { ...existing, ...shared }
+          : { id: crypto.randomUUID(), ...shared, pinned: false, createdAt: new Date().toISOString() }
+      },
+    )
 
   function toggleTag(tag: ContactTag) {
     setForm((f) => ({
       ...f,
       tags: f.tags.includes(tag) ? f.tags.filter((t) => t !== tag) : [...f.tags, tag],
     }))
-  }
-
-  function save() {
-    if (!form.name.trim()) return
-    if (editingId) {
-      setContacts((prev) =>
-        prev.map((c) =>
-          c.id === editingId
-            ? {
-                ...c,
-                name: form.name.trim(),
-                phone: form.phone.trim() || undefined,
-                metAt: form.metAt.trim(),
-                dateMet: form.dateMet,
-                tags: form.tags,
-                notes: form.notes.trim(),
-              }
-            : c,
-        ),
-      )
-    } else {
-      const contact: Contact = {
-        id: crypto.randomUUID(),
-        name: form.name.trim(),
-        phone: form.phone.trim() || undefined,
-        metAt: form.metAt.trim(),
-        dateMet: form.dateMet,
-        tags: form.tags,
-        notes: form.notes.trim(),
-        pinned: false,
-        createdAt: new Date().toISOString(),
-      }
-      setContacts((prev) => [contact, ...prev])
-    }
-    setFormOpen(false)
-  }
-
-  function remove(id: string) {
-    setContacts((prev) => prev.filter((c) => c.id !== id))
   }
 
   function togglePin(id: string) {
@@ -115,7 +82,7 @@ export default function ContactsSection() {
             <h3 className="font-display text-sm font-semibold text-ink-900 dark:text-ink-50">
               {editingId ? 'Edit contact' : 'New contact'}
             </h3>
-            <button onClick={() => setFormOpen(false)} aria-label="Close" className="text-ink-400">
+            <button onClick={closeForm} aria-label="Close" className="text-ink-400">
               <X size={16} />
             </button>
           </div>

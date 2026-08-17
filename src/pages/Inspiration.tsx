@@ -1,3 +1,4 @@
+import { storeKeys } from '../data/store'
 import { useState } from 'react'
 import { quotes, quoteOfTheDay } from '../data/quotes'
 import QuoteCard from '../components/QuoteCard'
@@ -8,11 +9,11 @@ import { todayKey, type InventoryEntry } from '../data/inventory'
 import { Bell, BellOff } from 'lucide-react'
 
 export default function Inspiration() {
-  const [favorites, setFavorites] = useLocalStorage<string[]>('odaat:favorites', [])
-  const [entries] = useLocalStorage<InventoryEntry[]>('odaat:entries', [])
+  const [favorites, setFavorites] = useLocalStorage<string[]>(storeKeys.favorites, [])
+  const [entries] = useLocalStorage<InventoryEntry[]>(storeKeys.entries, [])
   const [tab, setTab] = useState<'all' | 'favorites'>('all')
-  const [notifTime, setNotifTime] = useLocalStorage<string>('odaat:notifTime', '08:00')
-  const [notifOn, setNotifOn] = useLocalStorage<boolean>('odaat:notifOn', true)
+  const [notifTime, setNotifTime] = useLocalStorage<string>(storeKeys.notifTime, '08:00')
+  const [notifOn, setNotifOn] = useLocalStorage<boolean>(storeKeys.notifOn, true)
 
   const today = quoteOfTheDay()
   const streak = computeStreak(entries)

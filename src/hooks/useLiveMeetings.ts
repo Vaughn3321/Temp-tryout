@@ -1,3 +1,4 @@
+import { storeKeys } from '../data/store'
 import { useCallback, useEffect, useState } from 'react'
 import { sampleMeetings, type Meeting } from '../data/meetings'
 import { defaultMeetingSources, type MeetingSource } from '../data/meetingSources'
@@ -5,7 +6,7 @@ import { fetchMeetingGuideFeed } from '../lib/meetingGuide'
 import { withDailyTags } from '../lib/dailyMeetings'
 import { useLocalStorage } from './useLocalStorage'
 
-const CACHE_KEY = 'odaat:meetingsCache'
+const CACHE_KEY = storeKeys.meetingsCache
 const CACHE_TTL_MS = 60 * 60 * 1000 // 1 hour
 
 interface Cache {
@@ -22,7 +23,7 @@ export type MeetingsStatus = 'loading' | 'live' | 'sample' | 'error'
  * curated sample data if every feed is unreachable or empty.
  */
 export function useLiveMeetings() {
-  const [sources, setSources] = useLocalStorage<MeetingSource[]>('odaat:meetingSources', defaultMeetingSources)
+  const [sources, setSources] = useLocalStorage<MeetingSource[]>(storeKeys.meetingSources, defaultMeetingSources)
   const [meetings, setMeetings] = useState<Meeting[]>(() => withDailyTags(sampleMeetings))
   const [status, setStatus] = useState<MeetingsStatus>('loading')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
